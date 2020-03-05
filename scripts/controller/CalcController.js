@@ -1,7 +1,9 @@
 class CalcController{
     //Metoto Contrutor
     constructor(){
-        //Varial para pegar a local região
+
+        this._operation = [];
+        //Constante para pegar a local região
         this._locale = 'pt-BR';
         //atribuindo DOM para JavaScript, variavel que manipula dados do display da a calculadora
         this._displayCalcEl = document.querySelector("#display");
@@ -29,6 +31,59 @@ class CalcController{
 
     }
 
+    
+    clearAll(){
+        this._operation = [];
+    }
+
+    clearEntry(){
+        this._operation.pop();
+    }
+
+    addOperation(value){
+        this._operation.push(value)
+    }
+
+    setError(){
+        this.displayCalc = "Error";
+    }
+
+    execBtn(value){
+
+        switch(value){
+
+            case 'ac':
+                this.clearAll();
+                break;
+            case 'ce':
+                this.clearEntry();
+                break;
+            case 'soma':
+                
+                break;
+            case 'subtracao':
+                
+                break;
+            case 'divisao':
+                
+                break;
+            case 'multiplicaco':
+                
+                break;
+            case 'porcento':
+                
+                break;
+            case 'igual':
+                
+                break;
+            default:
+                this.setError();
+                break;
+        }
+
+    }
+
+
     //Metodo que trabalhar como evento click e selecioinando o tipo de botão que foi acionando o evento click
     initButtonsEvents(){
         //variavel que recebe os buttone parts da calculadora
@@ -41,7 +96,9 @@ class CalcController{
 
             //Chamando metodo que filtra o evento acionado
             this.addEventListenerAll( btn ,"click drag", e => {
-                console.log(btn.className.baseVal.replace("btn-",""));
+                //console.log(btn.className.baseVal.replace("btn-",""));
+                let textBtn = btn.className.baseVal.replace("ptn-", "");
+                this.execBtn(textBtn);
             });
 
             //Função para mudar o tipo do modelo do cursor

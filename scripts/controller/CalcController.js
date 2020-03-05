@@ -40,8 +40,30 @@ class CalcController{
         this._operation.pop();
     }
 
+    getLastOperation(){
+        return this._operation[his._operation.length-1];
+    }
+
+    isOperator(value){
+        return (['+','-','*','%','/'].indexOf(value) > -1);
+    }
+
     addOperation(value){
-        this._operation.push(value)
+
+        if(isNaN(this.getLastOperation())){
+            //String
+            if(this.isOperator(value)){
+                this._operation[his._operation.length-1] = value;
+            }else {
+                //outra coisa
+                console.log(value);
+            }
+        }else {
+            //Number
+            let newValue = this.getLastOperation().toString() + value.toString();
+            this._operation.push(newValue);
+        }
+        console.log(this._operation);
     }
 
     setError(){
@@ -67,7 +89,7 @@ class CalcController{
             case 'divisao':
                 
                 break;
-            case 'multiplicaco':
+            case 'multiplicacao':
                 
                 break;
             case 'porcento':
@@ -75,6 +97,22 @@ class CalcController{
                 break;
             case 'igual':
                 
+                break;
+            case 'ponto':
+                
+                break;
+            
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                this.addOperation(parseInt(value));
                 break;
             default:
                 this.setError();
@@ -97,7 +135,8 @@ class CalcController{
             //Chamando metodo que filtra o evento acionado
             this.addEventListenerAll( btn ,"click drag", e => {
                 //console.log(btn.className.baseVal.replace("btn-",""));
-                let textBtn = btn.className.baseVal.replace("ptn-", "");
+                let textBtn = btn.className.baseVal.replace("btn-", "");
+                //console.log(textBtn);
                 this.execBtn(textBtn);
             });
 

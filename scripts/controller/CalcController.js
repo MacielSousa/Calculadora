@@ -41,7 +41,11 @@ class CalcController{
     }
 
     getLastOperation(){
-        return this._operation[his._operation.length-1];
+        return this._operation[this._operation.length-1];
+    }
+    
+    setLastOperation(value){
+        this._operation[this._operation.length-1] = value;
     }
 
     isOperator(value){
@@ -49,21 +53,31 @@ class CalcController{
     }
 
     addOperation(value){
-
         if(isNaN(this.getLastOperation())){
             //String
-            if(this.isOperator(value)){
-                this._operation[his._operation.length-1] = value;
-            }else {
-                //outra coisa
-                console.log(value);
-            }
+                if(this.isOperator(value)){
+
+                    setLastOperation(value);
+
+                }else if(isNaN(value)){
+                    
+                    console.log(value);
+
+                }else{
+
+                    this._operation.push(value);
+
+                }
         }else {
-            //Number
-            let newValue = this.getLastOperation().toString() + value.toString();
-            this._operation.push(newValue);
+           //Number
+           let newValue = this.getLastOperation().toString() + value.toString();
+           this.setLastOperation(parseInt(newValue));
+           
+
         }
+
         console.log(this._operation);
+        
     }
 
     setError(){
@@ -81,25 +95,25 @@ class CalcController{
                 this.clearEntry();
                 break;
             case 'soma':
-                
+                this.addOperation('+');
                 break;
             case 'subtracao':
-                
+                this.addOperation('-');
                 break;
             case 'divisao':
-                
+                this.addOperation('/');
                 break;
             case 'multiplicacao':
-                
+                this.addOperation('*');
                 break;
             case 'porcento':
-                
+                this.addOperation('%');
                 break;
             case 'igual':
                 
                 break;
             case 'ponto':
-                
+                this.addOperation('.');
                 break;
             
             case '0':

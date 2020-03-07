@@ -34,10 +34,13 @@ class CalcController{
     
     clearAll(){
         this._operation = [];
+        console.log(this._operation);
+        this.setLastNumberToDisplay();
     }
 
     clearEntry(){
         this._operation.pop();
+        this.setLastNumberToDisplay();
     }
 
     getLastOperation(){
@@ -45,38 +48,106 @@ class CalcController{
     }
     
     setLastOperation(value){
-        this._operation[this._operation.length-1] = value;
+        this._operation[this._operation.length-1] = value;  
     }
 
     isOperator(value){
         return (['+','-','*','%','/'].indexOf(value) > -1);
     }
 
-    addOperation(value){
-        if(isNaN(this.getLastOperation())){
-            //String
-                if(this.isOperator(value)){
+    pushOperation(value){
+        
+        this._operation.push(value);
 
-                    setLastOperation(value);
+        if(this._operation.length > 3){
+        
+            this.calc();
 
-                }else if(isNaN(value)){
-                    
-                    console.log(value);
+        }
+    }
 
-                }else{
+    calc(){
 
-                    this._operation.push(value);
+        let last = '';
+        if(this._operation.length > 3){
+             last = this._operation.pop();
+        }
 
-                }
-        }else {
-           //Number
-           let newValue = this.getLastOperation().toString() + value.toString();
-           this.setLastOperation(parseInt(newValue));
-           
+        let result = eval(this._operation.join(""));
+
+        if(last == '%'){
+            
+           result /= 100;
+           this._operation = [result];
+
+        }else{
+        
+            this._operation = [result];
+            if(last) this._operation.push();
 
         }
 
-        console.log(this._operation);
+        this.setLastNumberToDisplay();
+
+    }
+
+    setLastNumberToDisplay(){
+        let lastNumber = 0;
+
+        for (let i = this._operation.length-1; i>=0; i--){
+            if(!this.isOperator(this._operation[i])){
+                lastNumber = this._operation[i];
+                break;
+            }
+        }
+
+        this.displayCalc = lastNumber;
+
+    }
+
+    addOperation(value){
+        
+            if(isNaN(this.getLastOperation())){
+                
+                    if(this.isOperator(value)){
+
+                       if(this._operation.length == 0){
+
+                        this._operation.push(value);
+                        
+
+                       }else{
+
+                        this.setLastOperation(value);
+                        
+                       }                       
+    
+                    }else if(isNaN(value)){
+
+                        //this._operation.push(value);
+                        
+    
+                    }else{
+    
+                        this.pushOperation(value);
+                        this.setLastNumberToDisplay();
+                        
+                    }
+            }else {
+                
+                if(this.isOperator(value)){
+    
+                    this.pushOperation(value);
+                         
+                } else {
+    
+                    let newValue = this.getLastOperation().toString() + value.toString();
+                    this.setLastOperation(parseInt(newValue));
+                    
+                    this.setLastNumberToDisplay();
+    
+                }
+        }
         
     }
 
@@ -110,7 +181,7 @@ class CalcController{
                 this.addOperation('%');
                 break;
             case 'igual':
-                
+                this.calc();
                 break;
             case 'ponto':
                 this.addOperation('.');
@@ -141,16 +212,13 @@ class CalcController{
         //variavel que recebe os buttone parts da calculadora
         let buttons = document.querySelectorAll("#buttons > g, #parts > g");
         //Imprime os buttões
-        console.log(buttons);
 
         //Funnção que verifica qual botão sofreu algum tipo de evento(click ou frag) e impreme o nome do botão
         buttons.forEach(btn=>{
 
             //Chamando metodo que filtra o evento acionado
             this.addEventListenerAll( btn ,"click drag", e => {
-                //console.log(btn.className.baseVal.replace("btn-",""));
                 let textBtn = btn.className.baseVal.replace("btn-", "");
-                //console.log(textBtn);
                 this.execBtn(textBtn);
             });
 
@@ -168,7 +236,7 @@ class CalcController{
 
     //Metodo que trabalha para que a horas fique atualizando no display da calculadora em 1 em 1 segundo
     initializer(){
-
+       this.setLastNumberToDisplay();
        this.setDisplayDateTime();
        let interval = setInterval(()=>{
          this.setDisplayDateTime();

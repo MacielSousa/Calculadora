@@ -2,8 +2,10 @@ class CalcController{
     //Metoto Contrutor
     constructor(){
 
+        this._audio = new Audio('click.mp3');
         this._lastOperator = '';
         this._lastNumber = '';
+        this._audioOnOff = false;
 
         this._operation = [];
         //Constante para pegar a local região
@@ -21,7 +23,128 @@ class CalcController{
         //Chamada do Metodo para manipular os eventos de click em buttons e parts
         this.initButtonsEvents();
 
+        this.initKeyboard();
+
     }
+
+
+        //Metodo que trabalha para que a horas fique atualizando no display da calculadora em 1 em 1 segundo
+        initializer(){
+            this.setLastNumberToDisplay();
+            this.setDisplayDateTime();
+            let interval = setInterval(()=>{
+              this.setDisplayDateTime();
+             }, 1000);
+     
+             this.setLastNumberToDisplay();
+             this.pasteFromClipboard();
+
+             document.querySelectorAll('.btn-ac').forEach(btn=>{
+                
+                btn.addEventListener('dblclick', e=> {
+
+                    this.toggleAudio();
+
+                });
+
+             });
+         }
+         toggleAudio(){
+
+            this._audioOnOff = ! this._audioOnOff;
+
+         }
+
+         playAudio(){
+
+            if(this._audioOnOff){
+                
+                this._audio.currentTime = 0;
+                this._audio.play();
+
+            }
+
+         }
+
+         copyToClipboard(){
+             let input = document.createElement('input');
+
+             input.value = this.displayCalc;
+
+             document.body.appendChild(input);
+
+             input.select();
+
+             document.execCommand("Copy");
+
+             input.remove();
+         }
+
+         pasteFromClipboard(){
+
+            document.addEventListener('paste', e=> {
+
+                let text = e.clipboardData.getData('Text');
+
+                this.displayCalc = parseFloat(text);
+
+                console.log(text);
+
+            });
+
+         }
+     
+         initKeyboard(){
+     
+             document.addEventListener('keyup', e => {
+                this.playAudio();
+                console.log(e.key);
+                switch(e.key){
+
+                    case 'Escape':
+                        this.clearAll();
+                        break;
+                    case 'Backspace':
+                        this.clearEntry();
+                        break;
+                    case '+':
+                    case '-':
+                    case '*':
+                    case '/':
+                    case '%':
+                        this.addOperation(e.key);
+                        break;
+                    case 'Enter':
+                    case '=':
+                        this.calc();
+                        break;
+                    case '.':
+                    case ',':
+                        this.addDot();
+                        break;
+                    
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        this.addOperation(parseInt(e.key));
+                        break;
+                    case 'c':
+                        if(e.ctrlKey) this.copyToClipboard();
+                        break
+                }
+
+
+             });
+     
+         }
+     
 
     //Metodo que seleciona evento e imprime o nome do botão selecionado
     addEventListenerAll(element, events, fn){
@@ -37,7 +160,8 @@ class CalcController{
     
     clearAll(){
         this._operation = [];
-        console.log(this._operation);
+        this._lastOperator = '';
+        this._lastNumber = '';
         this.setLastNumberToDisplay();
     }
 
@@ -70,8 +194,18 @@ class CalcController{
     }
 
     getResult(){
+        
 
-        return eval(this._operation.join(""));
+        try{
+
+            return eval(this._operation.join(""));
+
+        }catch(e){
+            setTimeout(() => {
+                this.setError();
+            }, 0);
+        }
+       
 
     }
 
@@ -103,10 +237,6 @@ class CalcController{
 
         }
 
-
-        console.log('_lastOperator ', this._lastOperator);
-        console.log('_lastNumber ', this._lastNumber);
-
         let result = this.getResult();
 
         if(last == '%'){
@@ -135,6 +265,11 @@ class CalcController{
                 }
         }
 
+        if(!lastItem){
+            
+            lastItem = (isOperator) ? this._lastOperator : this._lastNumber;
+
+        }
         return lastItem;
 
     }
@@ -164,11 +299,6 @@ class CalcController{
                         
                        }                       
     
-                    }else if(isNaN(value)){
-
-                        //this._operation.push(value);
-                        
-    
                     }else{
     
                         this.pushOperation(value);
@@ -184,12 +314,12 @@ class CalcController{
                 } else {
     
                     let newValue = this.getLastOperation().toString() + value.toString();
-                    this.setLastOperation(parseInt(newValue));
+                    this.setLastOperation(newValue);
                     
                     this.setLastNumberToDisplay();
     
                 }
-        }
+            }
         
     }
 
@@ -197,7 +327,23 @@ class CalcController{
         this.displayCalc = "Error";
     }
 
+    addDot(){
+
+        let lastOperation = this.getLastOperation();
+        if(typeof lastOperation === 'string' && lastOperation.split('').indexOf('.') > -1) return;
+        if(this.isOperator(lastOperation) || !lastOperation){
+            this.pushOperation('0.');
+        }else{
+            this.setLastOperation(lastOperation.toString() + '.');
+        }
+
+        this.setLastNumberToDisplay();
+
+    }
+
     execBtn(value){
+
+        this.playAudio();
 
         switch(value){
 
@@ -226,7 +372,7 @@ class CalcController{
                 this.calc();
                 break;
             case 'ponto':
-                this.addOperation('.');
+                this.addDot();
                 break;
             
             case '0':
@@ -276,15 +422,6 @@ class CalcController{
     }
 
 
-    //Metodo que trabalha para que a horas fique atualizando no display da calculadora em 1 em 1 segundo
-    initializer(){
-       this.setLastNumberToDisplay();
-       this.setDisplayDateTime();
-       let interval = setInterval(()=>{
-         this.setDisplayDateTime();
-        }, 1000);
-
-    }
 
     //Metodo ussado para pegar data e horas local
     setDisplayDateTime(){
@@ -318,14 +455,19 @@ class CalcController{
      }
 
     get displayCalc(){
-
+             
         return this._displayCalcEl.innerHTML;
 
     }
 
-    set displayCalc(valor){
+    set displayCalc(value){
 
-        this._displayCalcEl.innerHTML = valor;
+        if(value.toString().length > 10){
+            this.setError();
+            return false;
+        }
+
+        this._displayCalcEl.innerHTML = value;
 
     }
 

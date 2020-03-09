@@ -2,6 +2,9 @@ class CalcController{
     //Metoto Contrutor
     constructor(){
 
+        this._lastOperator = '';
+        this._lastNumber = '';
+
         this._operation = [];
         //Constante para pegar a local região
         this._locale = 'pt-BR';
@@ -66,14 +69,45 @@ class CalcController{
         }
     }
 
+    getResult(){
+
+        return eval(this._operation.join(""));
+
+    }
+
     calc(){
 
         let last = '';
-        if(this._operation.length > 3){
-             last = this._operation.pop();
+        
+        this._lastOperator = this.getLastItem();
+
+        if(this._operation.length < 3){
+
+            let firtsItem = this._operation[0];
+            this._operation = [firtsItem, this._lastOperator, this._lastNumber];
+
         }
 
-        let result = eval(this._operation.join(""));
+        if(this._operation.length > 3){
+
+             last = this._operation.pop();
+             this._lastNumber = this.getResult();
+
+        } else{
+            
+            if(this._operation.length == 3){
+
+                this._lastNumber = this.getLastItem(false);
+
+            }
+
+        }
+
+
+        console.log('_lastOperator ', this._lastOperator);
+        console.log('_lastNumber ', this._lastNumber);
+
+        let result = this.getResult();
 
         if(last == '%'){
             
@@ -91,16 +125,24 @@ class CalcController{
 
     }
 
-    setLastNumberToDisplay(){
-        let lastNumber = 0;
+    getLastItem(isOperator = true){
 
+        let lastItem;
         for (let i = this._operation.length-1; i>=0; i--){
-            if(!this.isOperator(this._operation[i])){
-                lastNumber = this._operation[i];
-                break;
-            }
+                if(this.isOperator(this._operation[i]) == isOperator){
+                    lastItem = this._operation[i];
+                    break;
+                }
         }
 
+        return lastItem;
+
+    }
+
+    setLastNumberToDisplay(){
+        let lastNumber = this.getLastItem(false);
+
+        if(!lastNumber) lastNumber = 0;
         this.displayCalc = lastNumber;
 
     }
